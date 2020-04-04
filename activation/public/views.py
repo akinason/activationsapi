@@ -26,5 +26,5 @@ class OrderDetailView(generics.GenericAPIView):
         order.is_used = True
         order.updated_on = datetime.utcnow()
         order.save()
-        serializer = OrderDetailSerializer(obj)
+        serializer = OrderDetailSerializer(order)
         return Response({"success": True, "data": serializer.data, "error": ""}, status=status.HTTP_200_OK)
