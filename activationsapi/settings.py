@@ -118,8 +118,10 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
-STATIC_URL = '/static/'
-
+STATIC_ROOT = conf.STATIC_ROOT
+STATIC_URL = conf.STATIC_URL
+MEDIA_ROOT = conf.MEDIA_ROOT
+MEDIA_URL = conf.MEDIA_URL
 # DigitalOcean Spaces Configuration
 # ==================================
 

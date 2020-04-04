@@ -30,11 +30,19 @@ class Base:
 
 class Development(Base):
     ALLOWED_HOSTS = config.get('base', 'ALLOWED_HOSTS').split(',')
+    STATIC_ROOT = "/var/www/html/activationsapi/static/"
+    STATIC_URL = '/static/'
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+    MEDIA_URL = '/media/'
 
 
 class Production(Base):
     DEBUG = False
-    config.get('base', 'ALLOWED_HOSTS').split(',')
+    ALLOWED_HOSTS = config.get('base', 'ALLOWED_HOSTS').split(',')
+    STATIC_ROOT = "/var/www/html/activationsapi/static/"
+    STATIC_URL = '/static/'
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+    MEDIA_URL = '/media/'
 
 
 configuration = Development() if DEBUG else Production()
