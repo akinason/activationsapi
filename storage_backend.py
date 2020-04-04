@@ -1,0 +1,8 @@
+import datetime
+from django.conf import settings
+from storages.backends.s3boto3 import S3Boto3Storage
+
+
+class PreviewImageStorage(S3Boto3Storage):
+    location = settings.AWS_PREVIEW_IMAGE_LOCATION
+    file_overwrite = False
