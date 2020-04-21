@@ -15,8 +15,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from activation.views import oauth_return_view
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('', admin.site.urls),
     path('api/', include('activation.urls')),
+    path('oauth/gloxon/callback', oauth_return_view)
 ]

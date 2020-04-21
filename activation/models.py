@@ -1,3 +1,4 @@
+import uuid
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils.translation import ugettext_lazy as _
@@ -15,13 +16,15 @@ LICENSE_TYPE_CHOICE_LIST = (('Monthly', 'Monthly'), ('Annual', 'Annual'))
 
 class User(AbstractUser):
     email = models.EmailField(_('email'), blank=False, null=False, unique=True)
+    gloxon_id = models.CharField(_('Gloxon ID'), blank=True, max_length=100)
+    gloxon_data = JSONField(_('GLoxon Data'), blank=True, null=True)
     website = models.URLField(_('website'), blank=True)
     mobile = models.CharField(_('mobile'), max_length=20, blank=True)
     access_key = models.CharField(_('access key'), max_length=255, blank=True)
     access_secret = models.CharField(_('access secret'), max_length=255, blank=True)
     rave_public_key = models.CharField(
         _("Flutterwave Public Key"), max_length=255, blank=True,
-        help_text=_("Plublic key obtained from https://bit.ly/3aHzeFJ. NB: This link contains a referral id.")
+        help_text=_("Plublic key obtained from https://bit.ly/3aHzeFJ   NB: This link contains a referral id.")
     )
     rave_secret_key = models.CharField(
         _("Flutterwave Secret Key"), max_length=255, blank=True,
@@ -30,6 +33,12 @@ class User(AbstractUser):
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['password', "username"]
+
+    def generate_api_keys(self):
+        if not self.access_secret:
+            self.access_secret = str(uuid.uuid4())
+        if not self.access_key:
+            self.access_key = str(uuid.uuid4())
 
 
 class Software(models.Model):
@@ -41,7 +50,7 @@ class Software(models.Model):
     download_link = models.URLField(_('download link'), blank=True, null=True)
     video_link = models.URLField(_('video link'), blank=True, help_text=_("Provide the link of a playlist or single video."))
     is_active = models.BooleanField(_('is active'), default=False)
-    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='softwares')
+    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='softwares', blank=True, null=True)
     created_on = models.DateTimeField(_('created on'), auto_now_add=True)
     updated_on = models.DateTimeField(_('updated on'), auto_now_add=True)
 
@@ -59,6 +68,9 @@ class Description(models.Model):
 
     class Meta:
         ordering = ['index', 'id']
+
+    def __str__(self):
+        return f"Paragraph {self.index}"
 
 
 class License(models.Model):

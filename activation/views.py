@@ -1,5 +1,11 @@
 from datetime import datetime
 
+from django.contrib import messages
+from django.contrib.auth import authenticate, login
+from django.contrib.auth.models import Group
+from django.views import generic
+from django.shortcuts import HttpResponse, HttpResponseRedirect
+
 from rest_framework import generics, status
 from rest_framework.response import Response
 
@@ -8,6 +14,7 @@ from .serializers import SoftwareSerializer, OrderSerializer, OrderUpdateSeriali
 from . import models
 from contrib.authentication import HTTPAuthentication
 from contrib.lib.flutterwave import Flutterwave
+from contrib.lib.gloxon import gloxonAuth
 
 
 class SoftwareListView(generics.GenericAPIView):
@@ -121,3 +128,55 @@ class ResendEmailView(generics.GenericAPIView):
             return Response({"success": True, "data": serializer.data, "error": ""}, status=status.HTTP_200_OK)
 
         return Response({"success": False, "data": {}, "error": "Order not paid or license key already used."}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class OauthReturnView(generic.View):
+
+    def get(self, request, *args, **kwargs):
+        authorization_code = request.GET.get('authorization_code')
+        _status = request.GET.get('status')
+
+        if _status != "accepted":
+            messages.warning(request, "Authentication was not successful, please try again.")
+            return HttpResponseRedirect('/login')
+        else:
+            res = gloxonAuth.exchangeAuthorizationCode(authorization_code)
+            if not res['success']:
+                messages.warning(request, "Authentication was not successful, please try again.")
+                return HttpResponseRedirect('/login')
+
+            _user = res.get('user')
+            email = _user.get('email')
+
+            if models.User.objects.filter(email=email).exists():
+                user = models.User.objects.get(email=email)
+                user.generate_api_keys()
+                user.set_password(user.access_secret)
+                user.gloxon_id = _user.get('public_id')
+                user.gloxon_data = res
+                user.save()
+            else:
+                user = models.User(
+                    email=email, first_name=_user.get('first_name'), last_name=_user.get('last_name'), username=email
+                )
+                user.mobile = _user.get('phone')
+                user.gloxon_id = _user.get('public_id')
+                user.is_active = True
+                user.is_staff = True
+                user.gloxon_data = res
+                user.generate_api_keys()
+                user.set_password(user.access_secret)
+                user.save()
+                group = Group.objects.get(name="developer")
+                user.groups.add(group)
+            user_ = authenticate(request, username=user.email, password=user.access_secret)
+
+            if user_:
+                login(request, user_)
+                return HttpResponseRedirect('/')
+            else:
+                messages.warning(request, "Authentication was not successful, please try again.")
+                return HttpResponseRedirect('/login')
+
+
+oauth_return_view = OauthReturnView.as_view()

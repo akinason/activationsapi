@@ -26,7 +26,9 @@ class Base:
     MAIL_USE_TLS = json.loads(str(config.get('mail', 'EMAIL_USE_TLS')).lower())  # Convert to python boolean
     MAIL_USERNAME = config.get('mail', 'EMAIL_HOST_USER')
     MAIL_PASSWORD = config.get('mail', 'EMAIL_HOST_PASSWORD')
-
+    GLOXON_APP_ID = config.get('oauth', 'GLOXON_APP_ID')
+    GLOXON_APP_KEY = config.get('oauth', 'GLOXON_APP_KEY')
+    GLOXON_APP_SECRET = config.get('oauth', 'GLOXON_APP_SECRET')
 
 class Development(Base):
     ALLOWED_HOSTS = config.get('base', 'ALLOWED_HOSTS').split(',')
