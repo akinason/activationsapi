@@ -1,5 +1,6 @@
 from django.contrib import admin
 from activation import models
+from django.utils.translation import ugettext_lazy as _
 
 
 class UserAdmin(admin.ModelAdmin):
@@ -8,8 +9,8 @@ class UserAdmin(admin.ModelAdmin):
     dev_list_display = ["gloxon_id", "access_key", "access_secret", "rave_public_key"]
     list_display_links = ["gloxon_id"]
     search_fields = ["email", "first_name", "last_name", "gloxon_id"]
-    dev_fields = ["gloxon_id", "access_key", "access_secret", "website", "mobile", "rave_public_key",  "rave_secret_key"]
-    readonly_fields = ["gloxon_id", "access_key", "access_secret"]
+    dev_fields = ["gloxon_id", "first_name", "last_name", "access_key", "access_secret", "website", "mobile", "rave_public_key",  "rave_secret_key"]
+    readonly_fields = ["gloxon_id", "access_key", "access_secret", 'first_name', "last_name"]
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
@@ -96,7 +97,9 @@ class OrderAdmin(admin.ModelAdmin):
         return qs.filter(software__author=request.user)
 
 
-admin.site.site_header = 'Activations Dashboard'
+admin.site.site_header = _('Activations Dashboard')
+admin.site.site_title = _('Activations Dashboard')
+admin.site.index_title = _('License Administration')
 admin.site.register(models.User, UserAdmin)
 admin.site.register(models.Software, SoftwareAdmin)
 admin.site.register(models.Order, OrderAdmin)

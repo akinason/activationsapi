@@ -148,13 +148,8 @@ class OauthReturnView(generic.View):
             _user = res.get('user')
             email = _user.get('email')
 
-            if models.User.objects.filter(email=email).exists():
-                user = models.User.objects.get(email=email)
-                user.generate_api_keys()
-                user.set_password(user.access_secret)
-                user.gloxon_id = _user.get('public_id')
-                user.gloxon_data = res
-                user.save()
+            if models.User.objects.filter(gloxon_id=_user.get('public_id')).exists():
+                user = models.User.objects.get(gloxon_id=_user.get('public_id'))
             else:
                 user = models.User(
                     email=email, first_name=_user.get('first_name'), last_name=_user.get('last_name'), username=email
@@ -169,6 +164,7 @@ class OauthReturnView(generic.View):
                 user.save()
                 group = Group.objects.get(name="developer")
                 user.groups.add(group)
+
             user_ = authenticate(request, username=user.email, password=user.access_secret)
 
             if user_:
